@@ -4,15 +4,17 @@ import openai
 import tiktoken
 from streamlit_chat import message
 import random
+import pandas as pd
+from PIL import Image
 
-openai.api_key = "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"
+openai.api_key = st.secrets["OPENAI_KEY"]
 
-pinecone_api_key = "5bd7c6ef-c6f1-426d-acb6-b1168078bd9d"
+pinecone_api_key = st.secrets["PINECONE_API_KEY"]
 
 pinecone.init(api_key=pinecone_api_key, environment="us-west1-gcp")
 
 # ==== ChatOutside + Pinecone =============================
-# ====== 1. Support function
+# ====== 0. Support function =================
 
 
 def randomize_array(arr):
@@ -70,7 +72,7 @@ def construct_prompt_pinecone(question):
     chosen_sections_length = 0
 
     for match in res['matches']:
-        # print(f"{match['score']:.2f}: {match['metadata']['text']}")
+        # select relevant section
         if chosen_sections_length <= MAX_SECTION_LEN:
             document_section = match['metadata']['text']
 
@@ -80,13 +82,15 @@ def construct_prompt_pinecone(question):
             chosen_sections_length += num_tokens_from_string(
                 str(document_section), "gpt2")
 
-    # Useful diagnostic information
-    # print(f"Selected {len(chosen_sections)} document sections:")
+    # Add urls as sources
+    sources = [
+        x['metadata']['url'] for x in res['matches']
+    ]
 
-    header = """
-    Sources:\n
+    header = f"""
+    Sources:\n 
     """
-    return header + "".join(chosen_sections)
+    return header + "".join(chosen_sections), sources
 
 
 # ======3. chatOutside function
@@ -98,8 +102,8 @@ COMPLETIONS_API_PARAMS = {
 
 def chatoutside(query):
     # start chat with chatOutside
-    source = construct_prompt_pinecone(query)
-    prompt = source + "\n\n Q: " + query + "\n A:"
+    source_text, source_urls = construct_prompt_pinecone(query)
+    prompt = source_text + "\n\n Q: " + query + "\n A:"
 
     try:
         response = openai.ChatCompletion.create(
@@ -128,16 +132,20 @@ with st.sidebar:
     st.markdown("# About 🙌")
     st.markdown(
         "chatOutside allows you to talk to version of chatGPT \n"
-        "that has access to latest Outside content about 6000 articles!  \n"
+        "that has access to latest Outside content!  \n"
         )
     st.markdown(
         "Unlike chatGPT, chatOutside can't make stuff up\n"
-        "and will only answer from injected knowledge 👩‍🏫 \n"
+        "and will answer from Outside knowledge base. 👩‍🏫 \n"
     )
     st.markdown("---")
     st.markdown("Prevent Large Language Model (LLM) hallucination - Wen Y.")
 
 st.title("chatOutside: Outside + ChatGPT")
+
+image = Image.open('/Users/wen/Downloads/VideoBkg_08.jpg')
+
+st.image(image, caption='Get Outside!')
 
 st.header("chatGPT 🤖")
 
@@ -165,7 +173,7 @@ st.button(
 )
 
 output_text = st.text_area(label="Answered by chatGPT:",
-                           value=st.session_state["summary"], height=250)
+                           value=st.session_state["summary"], height=200)
 
 # ========= End of Section 2 ===========
 
@@ -196,7 +204,7 @@ user_input = get_text()
 
 if user_input:
     output = chatoutside(user_input)
-    source = construct_prompt_pinecone(user_input)
+    _, source = construct_prompt_pinecone(user_input)
 
     # store the output
     st.session_state.past.append(user_input)
@@ -204,17 +212,28 @@ if user_input:
     st.session_state.source.append(source)
 
 
-# random user picture
-user_av = random.randint(0, 100)
+    link1 = source[0]
+    link2 = source[1]
+    link3 = source[2]
+    df = pd.DataFrame(
+        {
+            "source_url": [
+                f'<a target="_blank" href="{link1}">{link1}</a>',
+                f'<a target="_blank" href="{link2}">{link2}</a>',
+                f'<a target="_blank" href="{link3}">{link3}</a>'
+            ]
+        }
+    )
 
-# random bott picture
-bott_av = random.randint(0, 100)
+    st.write(df.to_html(escape=False, index=False), unsafe_allow_html=True)
 
 
 if st.session_state['generated']:
     for i in range(len(st.session_state['generated'])-1, -1, -1):
         message(st.session_state["generated"][i],  key=str(i))  # seed=bott_av
-        message(st.session_state["source"][i])
+        #message(st.session_state["source"][i])
         message(st.session_state['past'][i], is_user=True,
-                avatar_style="female",  key=str(i) + '_user') # seed=user_av
+                avatar_style="big-ears",  key=str(i) + '_user') # seed=user_av
+
+
 
