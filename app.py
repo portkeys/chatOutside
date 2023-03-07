@@ -46,7 +46,9 @@ def chatgpt(prompt):
         model='gpt-3.5-turbo',
         messages=[
             {"role": "system",
-             "content": "You are a friendly and helpful assistant. Answer the question as truthfully as possible. If unsure, say you don't know."},
+             "content": "You are a friendly and helpful assistant. "
+                        "Answer the question as truthfully as possible. "
+                        "If unsure, say you don't know."},
             {"role": "user", "content": prompt},
         ],
         temperature=0,
@@ -56,7 +58,8 @@ def chatgpt(prompt):
 
 
 input_gpt = st.text_input(label='Chat here! 💬')
-output_gpt = st.text_area(label="Answered by chatGPT:", value=chatgpt(input_gpt), height=200)
+output_gpt = st.text_area(label="Answered by chatGPT:",
+                          value=chatgpt(input_gpt), height=200)
 
 # ========= End of Section 2 ===========
 
@@ -65,6 +68,7 @@ output_gpt = st.text_area(label="Answered by chatGPT:", value=chatgpt(input_gpt)
 st.header("chatOutside 🏕️")
 
 # -------3.1 Langchain to remember conversation context --------
+
 
 def load_chain():
     """Logic for loading the chain you want to use should go here."""
@@ -92,7 +96,11 @@ def chatoutside(query):
     try:
         response = openai.ChatCompletion.create(
             messages=[{"role": "system",
-                       "content": "You are a friendly and helpful assistant and you are an expert with Outdoor activities."},
+                       "content": "You are a friendly and helpful assistant. "
+                                  "You are an expert on Outdoor activities "
+                                  "such as hiking, climbing, cycling, yoga "
+                                  "and you are aware of latest trend in "
+                                  "outdoor gears, clothing and shoes."},
                       {"role": "user", "content": str(prompt)}],
             **COMPLETIONS_API_PARAMS
         )
@@ -121,8 +129,10 @@ if 'past' not in st.session_state:
 if 'source' not in st.session_state:
     st.session_state['source'] = []
 
+
 def clear_text():
     st.session_state["input"] = ""
+
 
 # We will get the user's input by calling the get_text function
 def get_text():
@@ -163,7 +173,7 @@ if st.session_state['generated']:
     for i in range(len(st.session_state['generated'])-1, -1, -1):
         message(st.session_state["generated"][i],  key=str(i))  # seed=bott_av
         message(st.session_state['past'][i], is_user=True,
-                avatar_style="big-ears",  key=str(i) + '_user') # seed=user_av
+                avatar_style="big-ears",  key=str(i) + '_user')  # seed=user_av
 
 
 
