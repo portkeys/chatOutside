@@ -6,8 +6,13 @@ from streamlit_chat import message
 import random
 import pandas as pd
 from PIL import Image
+from langchain.chains import ConversationChain
+from langchain.llms import OpenAI
+import os
 
 openai.api_key = st.secrets["OPENAI_KEY"]
+# For Langchain
+os.environ["OPENAI_API_KEY"] = openai.api_key
 
 pinecone_api_key = st.secrets["PINECONE_API_KEY"]
 
@@ -136,10 +141,15 @@ with st.sidebar:
         )
     st.markdown(
         "Unlike chatGPT, chatOutside can't make stuff up\n"
-        "and will answer from Outside knowledge base. 👩‍🏫 \n"
+        "and will answer from Outside knowledge base. \n"
     )
+    st.markdown("👩‍🏫 Developer: Wen Yang")
     st.markdown("---")
-    st.markdown("Prevent Large Language Model (LLM) hallucination - Wen Y.")
+    st.markdown("# Under The Hood 🎩 🐇")
+    st.markdown("How to Prevent Large Language Model (LLM) hallucination?")
+    st.markdown("Pinecone: vector database for Outside knowledge")
+    st.markdown("Langchain: to remember the context of the conversation")
+
 
 st.title("chatOutside: Outside + ChatGPT")
 
@@ -180,6 +190,14 @@ output_text = st.text_area(label="Answered by chatGPT:",
 # ========== Section 3: chatOutside ============================
 
 st.header("chatOutside 🏕️")
+
+def load_chain():
+    """Logic for loading the chain you want to use should go here."""
+    llm = OpenAI(temperature=0)
+    chain = ConversationChain(llm=llm)
+    return chain
+
+chain = load_chain()
 
 # Storing the chat
 if 'generated' not in st.session_state:
