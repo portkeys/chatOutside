@@ -14,9 +14,9 @@ os.environ["OPENAI_API_KEY"] = openai.api_key
 
 # ==== Section 1: Streamlit Settings ======
 with st.sidebar:
-    st.markdown("# About 🙌")
+    st.markdown("# Welcome to chatOutside 🙌")
     st.markdown(
-        "chatOutside allows you to talk to version of chatGPT \n"
+        "**chatOutside** allows you to talk to version of **chatGPT** \n"
         "that has access to latest Outside content!  \n"
         )
     st.markdown(
@@ -27,8 +27,8 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("# Under The Hood 🎩 🐇")
     st.markdown("How to Prevent Large Language Model (LLM) hallucination?")
-    st.markdown("Pinecone: vector database for Outside knowledge")
-    st.markdown("Langchain: to remember the context of the conversation")
+    st.markdown("- **Pinecone**: vector database for Outside knowledge")
+    st.markdown("- **Langchain**: to remember the context of the conversation")
 
 
 st.title("chatOutside: Outside + ChatGPT")
@@ -71,7 +71,7 @@ st.header("chatOutside 🏕️")
 
 
 def load_chain():
-    """Logic for loading the chain you want to use should go here."""
+    """Logic for loading the conversation chain."""
     llm = OpenAI(temperature=0)
     chain = ConversationChain(llm=llm)
     return chain
